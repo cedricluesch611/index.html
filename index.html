@@ -1,6 +1,41 @@
 <!DOCTYPE html>
 <html>
 <body>
-test
+<script type="text/javascript">
+  navigator.bluetooth.requestDevice({
+    filters:
+      [
+        { name: MY_BLUETOOTH_NAME },
+        { services: [SEND_SERVICE] },
+      ]
+  })
+  
+  .then(device => {
+      myDevice = device;
+      return device.gatt.connect();
+    })
+  
+  .then(server => server.getPrimaryService(SEND_SERVICE))
+.then(service => service.getCharacteristic(SEND_SERVICE_CHARACTERISTIC))
+
+  const code = Number(event.target.dataset.code);
+  if (code === 1) {
+    toggleLigthCharacteristic.writeValue(Uint8Array.of(code));
+    return;
+  }
+  toggleLigthCharacteristic.readValue()
+    .then(currentCode => {
+      const convertedCode = currentCode.getUint8(0);
+      toggleLigthCharacteristic.writeValue(
+        Uint8Array.of(convertedCode === code ? 0 : code)
+      );
+    });
+  
+  myDevice.gatt.disconnect();
+toggleItemsEventListeners('removeEventListener');
+toggleButtonsVisible();
+toggleLigthCharacteristic = undefined;
+myDevice = undefined;
+  </script>
 </body>
 </html>
