@@ -1,41 +1,32 @@
 <!DOCTYPE html>
 <html>
 <body>
+  connect with bluetooth
 <script type="text/javascript">
-  navigator.bluetooth.requestDevice({
-    filters:
-      [
-        { name: Makeblock_LE },
-        { services: [0xFFE1] },
-      ]
+navigator.bluetooth.requestDevice({
+  filters: [{ services: [0xffe4] }]
+})
+  .then(function(device) {
+    // Step 2: Connect to it
+    return device.gatt.connect();
   })
-  
-  .then(device => {
-      myDevice = device;
-      return device.gatt.connect();
-    })
-  
-  .then(server => server.getPrimaryService(0xFFE1))
-.then(service => service.getCharacteristic(FFE3))
-
-  const code = Number(event.target.dataset.code);
-  if (code === 1) {
-    toggleLigthCharacteristic.writeValue(Uint8Array.of(code));
-    return;
-  }
-  toggleLigthCharacteristic.readValue()
-    .then(currentCode => {
-      const convertedCode = currentCode.getUint8(0);
-      toggleLigthCharacteristic.writeValue(
-        Uint8Array.of(convertedCode === code ? 0 : code)
-      );
-    });
-  
-  myDevice.gatt.disconnect();
-toggleItemsEventListeners('removeEventListener');
-toggleButtonsVisible();
-toggleLigthCharacteristic = undefined;
-myDevice = undefined;
+  .then(function(server) {
+    // Step 3: Get the Service
+    return server.getPrimaryService(0xffe4);
+  })
+  .then(function(service) {
+    // Step 4: get the Characteristic
+    return service.getCharacteristic(0xffe5);
+  })
+  .then(function(characteristic) {
+    // Step 5: Write to the characteristic
+    var data = new Uint8Array([0x02]);
+    return characteristic.writeValue(data);
+  })
+  .catch(function(error) {
+     // And of course: error handling!
+     console.error('Connection failed!', error);
+  });
   </script>
 </body>
 </html>
